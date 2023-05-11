@@ -35,6 +35,14 @@ async def get_items():
     # Retourner les résultats de l'API
     return {"items": results}
 
+@app.get("/janvier")
+async def get_items():
+    # Effectuer des opérations sur la base de données
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM janvier LIMIT 5")
+        results = cursor.fetchall()
+    # Retourner les résultats de l'API
+    return {"items": results}
 # # 4. Run the API with uvicorn
 # #    Will run on http://127.0.0.1:8000
 if __name__ == '__main__':
