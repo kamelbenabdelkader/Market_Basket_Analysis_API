@@ -11,7 +11,7 @@ import sqlalchemy
 
 app = FastAPI()
 # Configurer la connexion à la base de données
-DATABASE_URL = "mysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
+DATABASE_URL = "mysql+pymysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
 database = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 
