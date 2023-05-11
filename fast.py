@@ -2,50 +2,90 @@
 
 # 1. Library imports
 import uvicorn
-from fastapi import FastAPI
 from model import IrisModel, IrisSpecies
-from fastapi import FastAPI
 from pydantic import BaseModel
 import mysql.connector
+from fastapi import FastAPI
+import databases
+import sqlalchemy
 
-# 2. Create app and model objects
 app = FastAPI()
-model = IrisModel()
+# Configurer la connexion à la base de données
+DATABASE_URL = "mysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
+database = databases.Database(DATABASE_URL)
+metadata = sqlalchemy.MetaData()
+
+# Définir une table de modèle simple
+items = sqlalchemy.Table(
+    "items",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("name", sqlalchemy.String(50)),
+)
+
+engine = sqlalchemy.create_engine(DATABASE_URL)
+metadata.create_all(bind=engine)
+
+# Routes de l'API
+@app.get("/items")
+async def get_items():
+    query = items.select()
+    results = await database.fetch_all(query)
+    return {"items": results}
+
+@app.post("/items")
+async def create_item(name: str):
+    query = items.insert().values(name=name)
+    await database.execute(query)
+    return {"message": "Item created"}
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
 
-@app.get('/co')
-def db_connection():
-
-    conn = None
-
-    try:
-        conn = mysql.connector.connect(
-            host="myservernamekamel.mysql.database.azure.com",
-            user="kamel",
-            password="1234@Simplon",
-            database="airlines"
-        )
-        return {'message': f'La bdd est co youpi'}
-    except mysql.connector.Error as error:
-        return {'message': f'erreor bro {error}'}
-    finally:
-        if conn is not None:
-            return {'message': f'la co est vide ????'}
+# # 2. Create app and model objects
+# app = FastAPI()
+# model = IrisModel()
 
 
+# @app.get('/co')
+# def db_connection():
 
-# 3. Expose the prediction functionality, make a prediction from the passed
-#    JSON data and return the predicted flower species with the confidence
-@app.get('/predict')
-def predict_species(iris: IrisSpecies):
-    data = iris.dict()
-    prediction, probability = model.predict_species(
-        data['sepal_length'], data['sepal_width'], data['petal_length'], data['petal_width']
-    )
-    return {
-        'prediction': prediction,
-        'probability': probability
-    }
+#     conn = None
+
+#     try:
+#         conn = mysql.connector.connect(
+#             host="myservernamekamel.mysql.database.azure.com",
+#             user="kamel",
+#             password="1234@Simplon",
+#             database="airlines"
+#         )
+#         return {'message': f'La bdd est co youpi'}
+#     except mysql.connector.Error as error:
+#         return {'message': f'erreor bro {error}'}
+#     finally:
+#         if conn is not None:
+#             return {'message': f'la co est vide ????'}
+
+
+
+# # 3. Expose the prediction functionality, make a prediction from the passed
+# #    JSON data and return the predicted flower species with the confidence
+# @app.get('/predict')
+# def predict_species(iris: IrisSpecies):
+#     data = iris.dict()
+#     prediction, probability = model.predict_species(
+#         data['sepal_length'], data['sepal_width'], data['petal_length'], data['petal_width']
+#     )
+#     return {
+#         'prediction': prediction,
+#         'probability': probability
+#     }
 
 
 
