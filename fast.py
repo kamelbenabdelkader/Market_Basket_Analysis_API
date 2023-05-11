@@ -10,13 +10,12 @@ from model import IrisModel, IrisSpecies
 # import sqlalchemy
 # import pymysql
 # import pymysql.cursors
-
-
-
 from fastapi import FastAPI
 import pymysql
 
 app = FastAPI()
+
+
 
 # Configurer la connexion à la base de données MySQL
 conn = pymysql.connect(
@@ -24,10 +23,7 @@ conn = pymysql.connect(
             user="kamel",
             password="1234@Simplon",
             database="airlines",
-
 )
-
-
 
 # Définir les routes de l'API
 @app.get("/")
@@ -38,6 +34,91 @@ async def get_items():
         results = cursor.fetchall()
     # Retourner les résultats de l'API
     return {"items": results}
+
+# # 4. Run the API with uvicorn
+# #    Will run on http://127.0.0.1:8000
+if __name__ == '__main__':
+    # uvicorn.run(app, host='127.0.0.1', port=8000)
+    uvicorn.run('fast:app', host='0.0.0.0', port=8000)
+# app = FastAPI()
+# # Configurer la connexion à la base de données
+# DATABASE_URL = "mysql+pymysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
+# database = databases.Database(DATABASE_URL)
+# metadata = sqlalchemy.MetaData()
+
+# # Définir une table de modèle simple
+# items = sqlalchemy.Table(
+#     "items",
+#     metadata,
+#     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+#     sqlalchemy.Column("name", sqlalchemy.String(50)),
+# )
+
+# engine = sqlalchemy.create_engine(DATABASE_URL)
+# metadata.create_all(bind=engine)
+
+# # Routes de l'API
+# @app.get("/items")
+# async def get_items():
+#     query = items.select()
+#     results = await database.fetch_all(query)
+#     return {"items": results}
+
+# @app.post("/items")
+# async def create_item(name: str):
+#     query = items.insert().values(name=name)
+#     await database.execute(query)
+#     return {"message": "Item created"}
+
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
+
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await database.disconnect()
+
+
+# # 2. Create app and model objects
+# app = FastAPI()
+# model = IrisModel()
+
+
+# @app.get('/co')
+# def db_connection():
+
+#     conn = None
+
+#     try:
+#         conn = mysql.connector.connect(
+#             host="myservernamekamel.mysql.database.azure.com",
+#             user="kamel",
+#             password="1234@Simplon",
+#             database="airlines"
+#         )
+#         return {'message': f'La bdd est co youpi'}
+#     except mysql.connector.Error as error:
+#         return {'message': f'erreor bro {error}'}
+#     finally:
+#         if conn is not None:
+#             return {'message': f'la co est vide ????'}
+
+
+
+# # 3. Expose the prediction functionality, make a prediction from the passed
+# #    JSON data and return the predicted flower species with the confidence
+# @app.get('/predict')
+# def predict_species(iris: IrisSpecies):
+#     data = iris.dict()
+#     prediction, probability = model.predict_species(
+#         data['sepal_length'], data['sepal_width'], data['petal_length'], data['petal_width']
+#     )
+#     return {
+#         'prediction': prediction,
+#         'probability': probability
+#     }
+
+
 
 
 # app = FastAPI()
@@ -120,12 +201,6 @@ async def get_items():
 
 
 
-
-
-# # 4. Run the API with uvicorn
-# #    Will run on http://127.0.0.1:8000
-if __name__ == '__main__':
-    uvicorn.run(app, host='127.0.0.1', port=8000)
 
 
 # # 1. Library imports
