@@ -3,49 +3,80 @@
 # 1. Library imports
 import uvicorn
 from model import IrisModel, IrisSpecies
-from pydantic import BaseModel
-import mysql.connector
+# from pydantic import BaseModel
+# import mysql.connector
+# from fastapi import FastAPI
+# import databases
+# import sqlalchemy
+# import pymysql
+# import pymysql.cursors
+
+
+
 from fastapi import FastAPI
-import databases
-import sqlalchemy
+import pymysql
 
 app = FastAPI()
-# Configurer la connexion à la base de données
-DATABASE_URL = "mysql+pymysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
-database = databases.Database(DATABASE_URL)
-metadata = sqlalchemy.MetaData()
 
-# Définir une table de modèle simple
-items = sqlalchemy.Table(
-    "items",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("name", sqlalchemy.String(50)),
+# Configurer la connexion à la base de données MySQL
+conn = pymysql.connect(
+     host="myservernamekamel.mysql.database.azure.com",
+            user="kamel",
+            password="1234@Simplon",
+            database="airlines",
+
 )
 
-engine = sqlalchemy.create_engine(DATABASE_URL)
-metadata.create_all(bind=engine)
 
-# Routes de l'API
-@app.get("/items")
+
+# Définir les routes de l'API
+@app.get("/")
 async def get_items():
-    query = items.select()
-    results = await database.fetch_all(query)
+    # Effectuer des opérations sur la base de données
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM test")
+        results = cursor.fetchall()
+    # Retourner les résultats de l'API
     return {"items": results}
 
-@app.post("/items")
-async def create_item(name: str):
-    query = items.insert().values(name=name)
-    await database.execute(query)
-    return {"message": "Item created"}
 
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+# app = FastAPI()
+# # Configurer la connexion à la base de données
+# DATABASE_URL = "mysql+pymysql://kamel:1234@Simplon@myservernamekamel.mysql.database.azure.com:3306/airlines"
+# database = databases.Database(DATABASE_URL)
+# metadata = sqlalchemy.MetaData()
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
+# # Définir une table de modèle simple
+# items = sqlalchemy.Table(
+#     "items",
+#     metadata,
+#     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+#     sqlalchemy.Column("name", sqlalchemy.String(50)),
+# )
+
+# engine = sqlalchemy.create_engine(DATABASE_URL)
+# metadata.create_all(bind=engine)
+
+# # Routes de l'API
+# @app.get("/items")
+# async def get_items():
+#     query = items.select()
+#     results = await database.fetch_all(query)
+#     return {"items": results}
+
+# @app.post("/items")
+# async def create_item(name: str):
+#     query = items.insert().values(name=name)
+#     await database.execute(query)
+#     return {"message": "Item created"}
+
+# @app.on_event("startup")
+# async def startup():
+#     await database.connect()
+
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await database.disconnect()
 
 
 # # 2. Create app and model objects
