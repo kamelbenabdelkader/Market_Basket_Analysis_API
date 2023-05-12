@@ -121,6 +121,7 @@ def fetch_items(table_name: str, limit: int = None) -> List[TableBdd]:
     #     items.append(item)
 
 
+    # test
     # Retourner les résultats de l'API
     return items
 
