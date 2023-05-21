@@ -199,10 +199,31 @@ async def create_item(item: Test):
 
     # return new_item
 
-## faire les autres method CRUD reste update, delete put
-##Faire script pour le model
-##Penser à reduite les appel a la bdd
-##refacto ....
+
+
+
+@app.put("/update/{item_id}")
+async def update_item(item_id: int, item: Test):
+    # Effectuer des opérations sur la base de données
+    with conn.cursor() as cursor:
+        query = "UPDATE test SET FL_DATE = %s, AIRLINE_ID = %s, ORIGIN_AIRPORT_ID = %s, DEST_AIRPORT_ID = %s, DEP_TIME = %s " \
+                "WHERE id = %s"
+        values = (item.FL_DATE, item.AIRLINE_ID, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item_id)
+        cursor.execute(query, values)
+        conn.commit()
+
+    return {"message": f"Item with ID {item_id} updated successfully"}
+
+
+@app.delete("/delete/{item_id}")
+async def delete_item(item_id: int):
+    # Effectuer des opérations sur la base de données
+    with conn.cursor() as cursor:
+        query = "DELETE FROM test WHERE id = %s"
+        cursor.execute(query, item_id)
+        conn.commit()
+
+    return {"message": f"Item with ID {item_id} deleted successfully"}
 
 # # 4. Run the API with uvicorn
 # #    Will run on http://127.0.0.1:8000
