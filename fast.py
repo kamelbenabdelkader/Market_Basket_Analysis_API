@@ -175,6 +175,9 @@ async def get_items() -> List[Test]:
 # Il définit une ressource ou une fonctionnalité particulière fournie par l'API.
 # Chaque point de terminaison est associé à une méthode HTTP spécifique
 # (comme GET, POST, PUT, DELETE) qui indique l'action à effectuer sur la ressource.
+# Bien entendu on peut mettre ce que l'on souhaite comme point de terminaison
+# il faut juste etre coherent et que cela soit parlant pour qu'on s'yretrouve
+
 @app.get("/janvier")
 async def get_items():
     #le mot-clé "async" est utilisé pour déclarer des fonctions asynchrones
@@ -243,7 +246,7 @@ async def create_item(item: Test):
 
 
 
-@app.put("/update/{item_id}")
+@app.put("/put/{item_id}")
 async def update_item(item_id: int, item: Test):
     # Effectuer des opérations sur la base de données
     with conn.cursor() as cursor:
@@ -254,6 +257,45 @@ async def update_item(item_id: int, item: Test):
         conn.commit()
 
     return {"message": f"Item with ID {item_id} updated successfully"}
+
+
+@app.patch("/patch/{item_id}")
+async def update_item(item_id: int, item: Test):
+    # Effectuer des opérations sur la base de données
+    with conn.cursor() as cursor:
+        query = "UPDATE test SET "
+        values = []
+
+        # Générer la clause SET dynamiquement en fonction des valeurs non nulles de l'objet `item`
+        if item.FL_DATE is not None:
+            query += "FL_DATE = %s, "
+            values.append(item.FL_DATE)
+        if item.AIRLINE_ID is not None:
+            query += "AIRLINE_ID = %s, "
+            values.append(item.AIRLINE_ID)
+        if item.ORIGIN_AIRPORT_ID is not None:
+            query += "ORIGIN_AIRPORT_ID = %s, "
+            values.append(item.ORIGIN_AIRPORT_ID)
+        if item.DEST_AIRPORT_ID is not None:
+            query += "DEST_AIRPORT_ID = %s, "
+            values.append(item.DEST_AIRPORT_ID)
+        if item.DEP_TIME is not None:
+            query += "DEP_TIME = %s, "
+            values.append(item.DEP_TIME)
+
+        # Supprimer la virgule finale de la clause SET
+        query = query.rstrip(", ")
+
+        # Ajouter la clause WHERE pour mettre à jour l'élément spécifié par item_id
+        query += " WHERE id = %s"
+        values.append(item_id)
+
+        # Exécuter la requête de mise à jour avec les valeurs fournies
+        cursor.execute(query, values)
+        conn.commit()
+
+    return {"message": f"Item with ID {item_id} updated successfully"}
+
 
 
 @app.delete("/delete/{item_id}")
