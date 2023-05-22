@@ -180,19 +180,6 @@ async def get_items():
 
 
 @app.post("/add")
-# async def create_item(item: Data):
-#     # Effectuer des opérations sur la base de données
-#     with conn.cursor() as cursor:
-#         query = "INSERT INTO test (FL_DATE, AIRLINE_ID, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME) " \
-#                 "VALUES (%s, %s, %s, %s, %s)"
-#         values = (item.FL_DATE, item.AIRLINE_ID, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME)
-#         cursor.execute(query, values)
-#         conn.commit()
-
-
-
-
-#     return {"message": "Item created successfully"}
 async def create_item(item: Data):
     # Effectuer des opérations sur la base de données
     with conn.cursor() as cursor:
@@ -202,25 +189,21 @@ async def create_item(item: Data):
         cursor.execute(query, values)
         conn.commit()
 
-
     return {"message": "Item created successfully"}
 
     #         # Récupérer l'ID de la nouvelle instance
     #     new_item_id = cursor.lastrowid
 
     #     # Exécuter une requête SELECT pour récupérer la nouvelle instance
-    #     query = "SELECT * FROM test WHERE id = %s"
+    #     query = "SELECT * FROM data WHERE id = %s"
     #     cursor.execute(query, new_item_id)
     #     new_item_data = cursor.fetchone()
 
-    # # Créer une nouvelle instance de Test à partir des données récupérées
-    # new_item = Test(*new_item_data)
+    # # Créer une nouvelle instance de Data à partir des données récupérées
+    # new_item = Data(*new_item_data)
 
     # return new_item
 
-
-
-# @app.put("/update/{item_id}")
 
 @app.put("/put/{item_id}")
 async def update_item(item_id: int, item: Test):
@@ -271,7 +254,6 @@ async def update_item(item_id: int, item: Test):
         conn.commit()
 
     return {"message": f"Item with ID {item_id} updated successfully"}
-
 
 
 @app.delete("/delete/{item_id}")
