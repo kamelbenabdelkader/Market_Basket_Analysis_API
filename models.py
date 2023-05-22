@@ -10,6 +10,17 @@ class Test(BaseModel):
     DEST_AIRPORT_ID : Optional[int]
     DEP_TIME: Optional[str]
 
+class Data(BaseModel):
+    id: Optional[int]
+    QUARTER : Optional[int]
+    MONTH : Optional[int]
+    DAY_OF_MONTH : Optional[int]
+    DAY_OF_WEEK: Optional[int]
+    ORIGIN_AIRPORT_ID : Optional[int]
+    DEST_AIRPORT_ID : Optional[int]
+    DEP_TIME: Optional[str]
+    ARR_TIME: Optional[str]
+    VACATION : Optional[int]
 
 class TableBdd(BaseModel):
     YEAR: Optional[int]

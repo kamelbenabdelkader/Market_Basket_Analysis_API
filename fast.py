@@ -1,7 +1,7 @@
 # 1. Library imports
 import uvicorn
 from typing import List
-from models import Test,  TableBdd
+from models import Test,  TableBdd, Data
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
 import pymysql
@@ -141,92 +141,67 @@ async def get_items(table_name: str, limit: int = None) -> List[TableBdd]:
 
 # Petit test de co avec method get sur le home /
 @app.get("/")
-async def get_items() -> List[Test]:
+async def get_items() -> List[Data]:
     # Effectuer des opérations sur la base de données
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM test")
+        cursor.execute("SELECT * FROM data")
         results = cursor.fetchall()
 
     # Convertir les résultats en une liste d'objets Test a refacto par la suite
     items = []
     for row in results:
-        test_dict = {
+        data_dict = {
             "id": row[0],
-            "FL_DATE": row[1],
-            "AIRLINE_ID": row[2],
-            "ORIGIN_AIRPORT_ID": row[3],
-            "DEST_AIRPORT_ID": row[4],
-            "DEP_TIME": row[5]
+            "QUARTER" : row[1],
+            "MONTH" : row[2],
+            "DAY_OF_MONTH" : row[3],
+            "DAY_OF_WEEK": row[4],
+            "ORIGIN_AIRPORT_ID": row[5],
+            "DEST_AIRPORT_ID": row[6],
+            "DEP_TIME": row[7],
+            "ARR_TIME": row[8],
+            "VACATION": row[9]
         }
-        test = Test(**test_dict)
-        items.append(test)
+
+        data_user = Data(**data_dict)
+        items.append(data_user)
 
     # Retourner les résultats de l'API
     return items
 
-#Ici un exemple detaillé
-
-#apres le app je choisis une method du CRUD
-#création (.post), la lecture (.get), la mise à jour (.update) et la suppression (.delete) des données.
-# Ici je souhaite simplement recuperer les infos donc j utulise la method .get
-#Puis entre paranthése je definis mon point de terminaison .
-# Un point de terminaison (ou endpoint en anglais) est une URL spécifique
-#à laquelle une application ou un service web peut être accédé.
-# Il définit une ressource ou une fonctionnalité particulière fournie par l'API.
-# Chaque point de terminaison est associé à une méthode HTTP spécifique
-# (comme GET, POST, PUT, DELETE) qui indique l'action à effectuer sur la ressource.
-# Bien entendu on peut mettre ce que l'on souhaite comme point de terminaison
-# il faut juste etre coherent et que cela soit parlant pour qu'on s'yretrouve
-
 @app.get("/janvier")
 async def get_items():
-    #le mot-clé "async" est utilisé pour déclarer des fonctions asynchrones
-    # qui peuvent contenir des opérations asynchrones,
-    # améliorant ainsi les performances de l'API
-    # en permettant l'exécution concurrente de plusieurs tâches.
-    #La programmation asynchrone permet à une application d'effectuer d'autres tâches
-    # pendant l'attente d'une opération asynchrone,
-    # plutôt que de bloquer l'exécution jusqu'à ce que l'opération soit terminée.
-
-
-    # On va ensuite effectuer des opérations sur la base de données
-    #nous avons une connexion à la base de données représentée par l'objet conn.
-    # La méthode cursor() est appelée sur cette connexion pour obtenir un objet cursor
-    # qui nous permet d'exécuter des requêtes sur la base de données.
     with conn.cursor() as cursor:
-
-        #Ensuite, nous utilisons le cursor pour exécuter une requête SQL
-        # avec la méthode execute().
-        # Dans cet exemple, la requête exécute une instruction SELECT
-        # pour récupérer toutes les lignes de la table "janvier"
-        # et nous limitons les résultats à 5 en utilisant LIMIT 5.
         cursor.execute("SELECT * FROM janvier LIMIT 5")
-
-        #Une fois que la requête est exécutée,
-        # nous utilisons la méthode fetchall() pour récupérer tous les résultats
-        # de la requête dans une liste.
-        # Ces résultats sont stockés dans la variable results.
         results = cursor.fetchall()
-
-    # Puis on retourne les résultats de l'API
-   # Enfin, nous retournons les résultats sous la forme d'un dictionnaire JSON
-   # avec la clé "items" qui contient la liste des résultats.
-   # Cela signifie que lorsque vous accédez à cet endpoint de l'API,
-   # vous recevrez un JSON contenant les cinq premières lignes de la table "janvier".
     return {"items": results}
 
 
 
 
 @app.post("/add")
-async def create_item(item: Test):
+# async def create_item(item: Data):
+#     # Effectuer des opérations sur la base de données
+#     with conn.cursor() as cursor:
+#         query = "INSERT INTO test (FL_DATE, AIRLINE_ID, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME) " \
+#                 "VALUES (%s, %s, %s, %s, %s)"
+#         values = (item.FL_DATE, item.AIRLINE_ID, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME)
+#         cursor.execute(query, values)
+#         conn.commit()
+
+
+
+
+#     return {"message": "Item created successfully"}
+async def create_item(item: Data):
     # Effectuer des opérations sur la base de données
     with conn.cursor() as cursor:
-        query = "INSERT INTO test (FL_DATE, AIRLINE_ID, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME) " \
-                "VALUES (%s, %s, %s, %s, %s)"
-        values = (item.FL_DATE, item.AIRLINE_ID, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME)
+        query = "INSERT INTO data (QUARTER, MONTH, DAY_OF_MONTH, DAY_OF_WEEK, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME, ARR_TIME, VACATION) " \
+                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK,  item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item.ARR_TIME, item.VACATION)
         cursor.execute(query, values)
         conn.commit()
+
 
     return {"message": "Item created successfully"}
 
@@ -245,6 +220,7 @@ async def create_item(item: Test):
 
 
 
+# @app.put("/update/{item_id}")
 
 @app.put("/put/{item_id}")
 async def update_item(item_id: int, item: Test):
