@@ -1,7 +1,7 @@
 # 1. Library imports
 import uvicorn
 from typing import List
-from models import Test,  TableBdd, Data
+from models import Test,  TableBdd, Data , LGBModel , Predict
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
 import pymysql
@@ -14,6 +14,8 @@ import os
 load_dotenv()
 
 app = FastAPI()
+
+model = LGBModel()
 
 # Récupérer l'URL de la base de données à partir des variables d'environnement
 database_url = os.getenv("DATABASE_URL")
@@ -128,6 +130,14 @@ def fetch_items(table_name: str, limit: int = None) -> List[TableBdd]:
 
 
 
+# def store_prediction(item: Predict):
+#     # Connectez-vous à votre base de données et utilisez le curseur pour insérer les résultats dans une table
+#     with conn.cursor() as cursor:
+#         query = "INSERT INTO predict (TARGET, PROB) VALUES (%s,%s)"
+#         values = (item.TARGET,item.PROB)
+#         cursor.execute(query, values)
+#         conn.commit()
+
 #----------------- Définir les routes de l'API-----------------------------#
 
 #Prendre les mois en vue de faire des KBI ou des graphes
@@ -186,6 +196,15 @@ async def create_item(item: Data):
                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
         values = (item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK,  item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item.ARR_TIME, item.VACATION)
         cursor.execute(query, values)
+        conn.commit()
+
+        model = LGBModel()
+        TARGET = model.predict(item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK, item.VACATION, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.ARR_TIME,  item.DEP_TIME)
+
+    with conn.cursor() as cursor:
+        query1 = "INSERT INTO predict (TARGET) VALUES (%s)"
+        values1 = (TARGET)
+        cursor.execute(query1, values1)
         conn.commit()
 
     return {"message": "Item created successfully"}
