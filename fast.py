@@ -191,6 +191,10 @@ async def get_items():
 @app.post("/add")
 async def create_item(item: Data):
     # Effectuer des opérations sur la base de données
+    prediction, probability = model.predict_delay(
+    item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK,  item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item.ARR_TIME, item.VACATION
+    )
+
     with conn.cursor() as cursor:
         query = "INSERT INTO data (QUARTER, MONTH, DAY_OF_MONTH, DAY_OF_WEEK, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME, ARR_TIME, VACATION) " \
                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -198,16 +202,8 @@ async def create_item(item: Data):
         cursor.execute(query, values)
         conn.commit()
 
-        model = LGBModel()
-        TARGET = model.predict(item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK, item.VACATION, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.ARR_TIME,  item.DEP_TIME)
-
-    with conn.cursor() as cursor:
-        query1 = "INSERT INTO predict (TARGET) VALUES (%s)"
-        values1 = (TARGET)
-        cursor.execute(query1, values1)
-        conn.commit()
-
-    return {"message": "Item created successfully"}
+    return {"message": "Item created successfully",  'prediction': prediction,
+        'probability': probability}
 
     #         # Récupérer l'ID de la nouvelle instance
     #     new_item_id = cursor.lastrowid
