@@ -2,7 +2,6 @@
 from typing import Optional, Union
 from pydantic import BaseModel
 
-
 class Test(BaseModel):
     id: Optional[int]
     FL_DATE : Optional[str]
@@ -22,7 +21,6 @@ class Data(BaseModel):
     DEP_TIME: Optional[str]
     ARR_TIME: Optional[str]
     VACATION : Optional[int]
-
 
 class TableBdd(BaseModel):
     YEAR: Optional[int]
