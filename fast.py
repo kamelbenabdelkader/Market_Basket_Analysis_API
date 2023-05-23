@@ -178,7 +178,6 @@ async def get_items():
 
 
 
-
 @app.post("/add")
 async def create_item(item: Data):
     # Effectuer des opérations sur la base de données
@@ -220,10 +219,11 @@ async def update_item(item_id: int, item: Test):
 
 @app.patch("/patch/{item_id}")
 async def update_item(item_id: int, item: Test):
-    # Effectuer des opérations sur la base de données
+    # Effectuer des opérations sur la base de données .
     with conn.cursor() as cursor:
-        query = "UPDATE test SET "
+        query = "UPDATE test SET"
         values = []
+
 
         # Générer la clause SET dynamiquement en fonction des valeurs non nulles de l'objet `item`
         if item.FL_DATE is not None:
