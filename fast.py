@@ -197,7 +197,6 @@ async def create_item(item: Data):
         values = (item.QUARTER,item.MONTH, item.DAY_OF_MONTH, item.DAY_OF_WEEK,  item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item.ARR_TIME, item.VACATION)
         cursor.execute(query, values)
         conn.commit()
-
     return {"message": "Item created successfully"}
 
     #         # Récupérer l'ID de la nouvelle instance
