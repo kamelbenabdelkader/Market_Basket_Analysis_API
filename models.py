@@ -1,7 +1,6 @@
 
 from typing import Optional, Union
 from pydantic import BaseModel
-import joblib
 
 
 class Test(BaseModel):
@@ -23,12 +22,6 @@ class Data(BaseModel):
     DEP_TIME: Optional[str]
     ARR_TIME: Optional[str]
     VACATION : Optional[int]
-
-
-class Predict(BaseModel):
-    id: Optional[int]
-    TARGET : Optional[int]
-    PROB : Optional[int]
 
 
 class TableBdd(BaseModel):
@@ -97,22 +90,3 @@ class TableBdd(BaseModel):
     TOTAL_ADD_GTIME: Optional[str]
     LONGEST_ADD_GTIME: Optional[str]
     Column65: Optional[str]
-
-
-# 3. Class for training the model and making predictions
-class LGBModel:
-    # 6. Class constructor, loads the dataset and loads the model
-    #    if exists. If not, calls the _train_model method and
-    #    saves the model
-    def __init__(self):
-        self.model_fname_ = 'model.pkl'
-        self.model = joblib.load(self.model_fname_)
-
-    # 5. Make a prediction based on the user-entered data
-    #    Returns the predicted species with its respective probability
-    def predict_delay(self, QUARTER , MONTH , DAY_OF_MONTH , DAY_OF_WEEK , ORIGIN_AIRPORT_ID , DEST_AIRPORT_ID , DEP_TIME , ARR_TIME , VACATION):
-        data_in = [[ QUARTER , MONTH , DAY_OF_MONTH , DAY_OF_WEEK , ORIGIN_AIRPORT_ID , DEST_AIRPORT_ID , DEP_TIME , ARR_TIME , VACATION]]
-        prediction = self.model.predict(data_in)
-        # probability = self.model.predict_proba(data_in).max()
-        # return prediction[0], probability
-        return prediction[0]
