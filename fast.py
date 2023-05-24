@@ -8,12 +8,17 @@ import pymysql
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 import os
+import pickle
 
 
 # Charger les variables d'environnement à partir du fichier .env
 load_dotenv()
 
 app = FastAPI()
+
+# Load the pickled model
+# model = pickle.load(open('model.pkl', 'rb'))
+
 
 # Récupérer l'URL de la base de données à partir des variables d'environnement
 database_url = os.getenv("DATABASE_URL")
