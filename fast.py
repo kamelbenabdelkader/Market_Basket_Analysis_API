@@ -37,7 +37,6 @@ conn = pymysql.connect(
     password=db_password,
     database=db_name
 )
-
 # Petit test de co avec method get sur le home /
 # @app.get("/")
 # async def get_items() -> List[Data]:
@@ -73,10 +72,11 @@ conn = pymysql.connect(
 async def get_homes():
     return {"Hello": "la P21"}
 
+
 @app.get("/test")
 async def get_items():
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM base_sql_basket LIMIT 5")
+        cursor.execute("SELECT * FROM base_sql_basket LIMIT 6")
         results = cursor.fetchall()
     return {"items": results}
 
