@@ -20,27 +20,30 @@ app = FastAPI()
 model = pickle.load(open('model.pkl', 'rb'))
 
 
-# Récupérer l'URL de la base de données à partir des variables d'environnement
-database_url = os.getenv("DATABASE_URL")
+def connect():
+    # Récupérer l'URL de la base de données à partir des variables d'environnement
+    database_url = os.getenv("DATABASE_URL")
 
-# Extraire les composants de l'URL de la base de données
-url_components = urlparse(database_url)
-db_host = url_components.hostname
-db_user = url_components.username
-db_password = url_components.password
-db_name = url_components.path.strip("/")
+    # Extraire les composants de l'URL de la base de données
+    url_components = urlparse(database_url)
+    db_host = url_components.hostname
+    db_user = url_components.username
+    db_password = url_components.password
+    db_name = url_components.path.strip('/')
 
-# Configurer la connexion à la base de données MySQL
-conn = pymysql.connect(
-    host=db_host,
-    user=db_user,
-    password=db_password,
-    database=db_name
-)
+    # Configurer la connexion à la base de données MySQL
+    conn = pymysql.connect(
+        host=db_host,
+        user=db_user,
+        password=db_password,
+        database=db_name
+    )
+    return conn
 
 #----------------- Function a placer dans un autre fichier et a refacto-----------------------------#
 def fetch_items(table_name: str, limit: int = None) -> List[TableBdd]:
     # Effectuer des opérations sur la base de données
+    conn = connect()
     with conn.cursor() as cursor:
         query = f"SELECT * FROM {table_name}"
         if limit is not None:
@@ -128,10 +131,8 @@ def fetch_items(table_name: str, limit: int = None) -> List[TableBdd]:
 
     # test
     # Retourner les résultats de l'API
+    conn.close()
     return items
-
-
-
 
 #----------------- Définir les routes de l'API-----------------------------#
 
@@ -148,6 +149,7 @@ async def get_items(table_name: str, limit: int = None) -> List[TableBdd]:
 @app.get("/")
 async def get_items() -> List[Data]:
     # Effectuer des opérations sur la base de données
+    conn = connect()
     with conn.cursor() as cursor:
         cursor.execute("SELECT * FROM data")
         results = cursor.fetchall()
@@ -170,17 +172,18 @@ async def get_items() -> List[Data]:
 
         data_user = Data(**data_dict)
         items.append(data_user)
-
+    conn.close()
     # Retourner les résultats de l'API
     return items
 
 @app.get("/janvier")
 async def get_items():
+    conn = connect()
     with conn.cursor() as cursor:
         cursor.execute("SELECT * FROM janvier LIMIT 5")
         results = cursor.fetchall()
+    conn.close()
     return {"items": results}
-
 
 
 # @app.post("/add")
@@ -212,6 +215,7 @@ async def get_items():
 @app.post("/add")
 async def create_item(item: Data):
     # Perform operations on the database
+    conn = connect()
     with conn.cursor() as cursor:
         query = "INSERT INTO data (QUARTER, MONTH, DAY_OF_MONTH, DAY_OF_WEEK, ORIGIN_AIRPORT_ID, DEST_AIRPORT_ID, DEP_TIME, ARR_TIME, VACATION) " \
                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -219,25 +223,26 @@ async def create_item(item: Data):
         cursor.execute(query, values)
         conn.commit()
 
-    # Get the last inserted item_id
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT LAST_INSERT_ID()")
-        item_id = cursor.fetchone()[0]
+    # # Get the last inserted item_id
+    # with conn.cursor() as cursor:
+    #     cursor.execute("SELECT LAST_INSERT_ID()")
+    #     item_id = cursor.fetchone()[0]
 
-    # Generate prediction using the pickled model
-    data = pd.DataFrame.from_dict([item.dict()])
-    prediction = model.predict(data)[0]  # Extract the integer value from the list
+    # # Generate prediction using the pickled model
+    # data = pd.DataFrame.from_dict([item.dict()])
+    # prediction = model.predict(data)[0]  # Extract the integer value from the list
 
-    # Get the prediction probabilities
-    probabilities = model.predict_proba(data)[0]
+    # # Get the prediction probabilities
+    # probabilities = model.predict_proba(data)[0]
 
-    # Insert the prediction and probabilities into the "predict" table
-    with conn.cursor() as cursor:
-        query = "INSERT INTO predict (TARGET, PROB0, PROB1, data_id) VALUES (%s, %s, %s, %s)"
-        values = (prediction, probabilities[0], probabilities[1], item_id)
-        cursor.execute(query, values)
-        conn.commit()
+    # # Insert the prediction and probabilities into the "predict" table
+    # with conn.cursor() as cursor:
+    #     query = "INSERT INTO predict (TARGET, PROB0, PROB1, data_id) VALUES (%s, %s, %s, %s)"
+    #     values = (prediction, probabilities[0], probabilities[1], item_id)
+    #     cursor.execute(query, values)
+    #     conn.commit()
 
+    conn.close()
     return {"message": "Item created successfully"}
 
     # # Insert the prediction into another table
@@ -254,19 +259,21 @@ async def create_item(item: Data):
 @app.put("/put/{item_id}")
 async def update_item(item_id: int, item: Test):
     # Effectuer des opérations sur la base de données
+    conn = connect()
     with conn.cursor() as cursor:
         query = "UPDATE test SET FL_DATE = %s, AIRLINE_ID = %s, ORIGIN_AIRPORT_ID = %s, DEST_AIRPORT_ID = %s, DEP_TIME = %s " \
                 "WHERE id = %s"
         values = (item.FL_DATE, item.AIRLINE_ID, item.ORIGIN_AIRPORT_ID, item.DEST_AIRPORT_ID, item.DEP_TIME, item_id)
         cursor.execute(query, values)
         conn.commit()
-
+    conn.close()
     return {"message": f"Item with ID {item_id} updated successfully"}
 
 
 @app.patch("/patch/{item_id}")
 async def update_item(item_id: int, item: Test):
     # Effectuer des opérations sur la base de données .
+    conn = connect()
     with conn.cursor() as cursor:
         query = "UPDATE test SET"
         values = []
@@ -299,18 +306,19 @@ async def update_item(item_id: int, item: Test):
         # Exécuter la requête de mise à jour avec les valeurs fournies
         cursor.execute(query, values)
         conn.commit()
-
+    conn.close()
     return {"message": f"Item with ID {item_id} updated successfully"}
 
 
 @app.delete("/delete/{item_id}")
 async def delete_item(item_id: int):
+    conn = connect()
     # Effectuer des opérations sur la base de données
     with conn.cursor() as cursor:
         query = "DELETE FROM test WHERE id = %s"
         cursor.execute(query, item_id)
         conn.commit()
-
+    conn.close()
     return {"message": f"Item with ID {item_id} deleted successfully"}
 
 # # 4. Run the API with uvicorn
